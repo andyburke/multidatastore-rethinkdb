@@ -38,6 +38,10 @@ const Rethink_Driver = {
             } );
     },
 
+    stop: async function() {
+        this.db = null;
+    },
+
     put: async function( object ) {
         const table = this.db.table( this.options.table );
         await table.insert( object, {
