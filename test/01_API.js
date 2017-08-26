@@ -16,6 +16,7 @@ tape( 'API: API is correct on driver instance', t => {
     t.ok( rethink_driver, 'got driver instance' );
 
     t.equal( rethink_driver && typeof rethink_driver.init, 'function', 'exports init' );
+    t.equal( rethink_driver && typeof rethink_driver.stop, 'function', 'exports stop' );
     t.equal( rethink_driver && typeof rethink_driver.put, 'function', 'exports put' );
     t.equal( rethink_driver && typeof rethink_driver.get, 'function', 'exports get' );
     t.equal( rethink_driver && typeof rethink_driver.del, 'function', 'exports del' );

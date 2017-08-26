@@ -39,7 +39,7 @@ const Rethink_Driver = {
     },
 
     stop: async function() {
-        this.db = null;
+        this.db && this.db.pool && typeof this.db.pool.drain === 'function' && this.db.pool.drain();
     },
 
     put: async function( object ) {
