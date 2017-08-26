@@ -11,11 +11,11 @@ const Rethink_Driver = {
             .dbList()
             .contains( this.options.database )
             .do( db_exists => {
-                return this.db.r
+                return RethinkDB.r
                     .branch(
                         db_exists,
                         { created: 0 },
-                        this.db.r.dbCreate( this.options.database )
+                        RethinkDB.r.dbCreate( this.options.database )
                     );
             } );
 
@@ -28,13 +28,13 @@ const Rethink_Driver = {
         await this.db
             .db( this.options.database )
             .tableList()
-            .contains( this.options.table.name )
+            .contains( this.options.table )
             .do( table_exists => {
-                return this.db.r
+                return RethinkDB.r
                     .branch(
                         table_exists,
                         { created: 0 },
-                        this.db.r.db( options.database ).tableCreate( this.options.table, table_options ) );
+                        RethinkDB.r.db( this.options.database ).tableCreate( this.options.table, table_options ) );
             } );
     },
 
