@@ -25,7 +25,7 @@ const Rethink_Driver = {
             replicas: 1
         }, this.options.table_options );
 
-        await this.db
+        const table_creation_result = await this.db
             .db( this.options.database )
             .tableList()
             .contains( this.options.table )
@@ -33,9 +33,19 @@ const Rethink_Driver = {
                 return RethinkDB.r
                     .branch(
                         table_exists,
-                        { created: 0 },
+                        { tables_created: 0 },
                         RethinkDB.r.db( this.options.database ).tableCreate( this.options.table, table_options ) );
             } );
+
+        if ( !table_creation_result.tables_created ) {
+            return;
+        }
+
+        // if we had to create the table, wait for it to be ready
+        await this.db
+            .db( this.options.database )
+            .table( this.options.table )
+            .wait();
     },
 
     stop: async function() {
