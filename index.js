@@ -53,20 +53,20 @@ const Rethink_Driver = {
     },
 
     put: async function( object ) {
-        const table = this.db.table( this.options.table );
+        const table = this.db.db( this.options.database ).table( this.options.table );
         await table.insert( object, {
             conflict: 'replace'
         } );
     },
 
     get: async function( id ) {
-        const table = this.db.table( this.options.table );
+        const table = this.db.db( this.options.database ).table( this.options.table );
         const result = await table.get( id );
         return result;
     },
 
     del: async function( id ) {
-        const table = this.db.table( this.options.table );
+        const table = this.db.db( this.options.database ).table( this.options.table );
         await table.get( id ).delete();
     }
 };
