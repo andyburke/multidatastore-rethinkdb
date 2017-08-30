@@ -86,6 +86,7 @@ module.exports = {
 
         const instance = Object.assign( {}, Rethink_Driver );
         instance.options = options;
+        instance.r = RethinkDB.r;
 
         return instance;
     }
