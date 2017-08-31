@@ -37,15 +37,37 @@ const Rethink_Driver = {
                         RethinkDB.r.db( this.options.database ).tableCreate( this.options.table, table_options ) );
             } );
 
-        if ( !table_creation_result.tables_created ) {
-            return;
+        if ( table_creation_result.tables_created ) {
+            // if we had to create the table, wait for it to be ready
+            await this.db
+                .db( this.options.database )
+                .table( this.options.table )
+                .wait();
         }
 
-        // if we had to create the table, wait for it to be ready
-        await this.db
-            .db( this.options.database )
-            .table( this.options.table )
-            .wait();
+        const indexes = this.options.indexes || [];
+        for ( const index in indexes ) {
+            const index_creation_result = await this.db
+                .db( this.options.database )
+                .table( this.options.table )
+                .indexList()
+                .contains( index.name )
+                .do( index_exists => {
+                    return RethinkDB.r
+                        .branch(
+                            index_exists,
+                            { created: 0 },
+                            RethinkDB.r.db( this.options.database ).table( this.options.table ).indexCreate( index.name, index.create )
+                        );
+                } );
+
+            if ( index_creation_result.created ) {
+                await this.db
+                    .db( this.options.database )
+                    .table( this.options.table )
+                    .indexWait( index.name );
+            }
+        }
     },
 
     stop: async function() {
