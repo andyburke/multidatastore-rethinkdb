@@ -46,7 +46,7 @@ const Rethink_Driver = {
         }
 
         const indexes = this.options.indexes || [];
-        for ( const index in indexes ) {
+        for ( const index of indexes ) {
             const index_creation_result = await this.db
                 .db( this.options.database )
                 .table( this.options.table )
