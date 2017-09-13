@@ -75,8 +75,9 @@ const Rethink_Driver = {
     },
 
     put: async function( object ) {
+        const mapped_object = this.options.mapper ? await this.options.mapper( object ) : object;
         const table = this.db.db( this.options.database ).table( this.options.table );
-        await table.insert( object, {
+        await table.insert( mapped_object, {
             conflict: 'replace'
         } );
     },
@@ -84,7 +85,8 @@ const Rethink_Driver = {
     get: async function( id ) {
         const table = this.db.db( this.options.database ).table( this.options.table );
         const result = await table.get( id );
-        return result;
+        const unmapped_object = this.options.unmapper ? await this.options.unmapper( result ) : result;
+        return unmapped_object;
     },
 
     del: async function( id ) {
@@ -95,7 +97,7 @@ const Rethink_Driver = {
 
 module.exports = {
     create: function( _options ) {
-        const options = extend( true, {
+        const options = extend( true, {}, {
             readable: true,
             id_field: 'id',
             db: {
@@ -103,7 +105,9 @@ module.exports = {
                 port: 28015
             },
             database: null,
-            table: null
+            table: null,
+            mapper: null,
+            unmapper: null
         }, _options );
 
         const instance = Object.assign( {}, Rethink_Driver );
