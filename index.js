@@ -75,18 +75,31 @@ const Rethink_Driver = {
     },
 
     put: async function( object ) {
-        const mapped_object = this.options.mapper ? await this.options.mapper( object ) : object;
+        const processed = await this.options.processors.map( processor => processor.serialize ).reduce( async ( _object, serialize ) => {
+            if ( !serialize ) {
+                return _object;
+            }
+
+            return await serialize( _object );
+        }, object );
+
         const table = this.db.db( this.options.database ).table( this.options.table );
-        await table.insert( mapped_object, {
+        await table.insert( processed, {
             conflict: 'replace'
         } );
     },
 
     get: async function( id ) {
         const table = this.db.db( this.options.database ).table( this.options.table );
-        const result = await table.get( id );
-        const unmapped_object = this.options.unmapper ? await this.options.unmapper( result ) : result;
-        return unmapped_object;
+        const processed = await table.get( id );
+        const object = await this.options.processors.map( processor => processor.deserialize ).reduceRight( async ( _object, deserialize ) => {
+            if ( !deserialize ) {
+                return _object;
+            }
+
+            return await deserialize( _object );
+        }, processed );
+        return object;
     },
 
     del: async function( id ) {
@@ -106,8 +119,7 @@ module.exports = {
             },
             database: null,
             table: null,
-            mapper: null,
-            unmapper: null
+            processors: []
         }, _options );
 
         const instance = Object.assign( {}, Rethink_Driver );
