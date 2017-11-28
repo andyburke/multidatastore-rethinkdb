@@ -75,30 +75,15 @@ const Rethink_Driver = {
     },
 
     put: async function( object ) {
-        const processed = await this.options.processors.map( processor => processor.serialize ).reduce( async ( _object, serialize ) => {
-            if ( !serialize ) {
-                return _object;
-            }
-
-            return await serialize( _object );
-        }, object );
-
         const table = this.db.db( this.options.database ).table( this.options.table );
-        await table.insert( processed, {
+        await table.insert( object, {
             conflict: 'replace'
         } );
     },
 
     get: async function( id ) {
         const table = this.db.db( this.options.database ).table( this.options.table );
-        const processed = await table.get( id );
-        const object = await this.options.processors.map( processor => processor.deserialize ).reduceRight( async ( _object, deserialize ) => {
-            if ( !deserialize ) {
-                return _object;
-            }
-
-            return await deserialize( _object );
-        }, processed );
+        const object = await table.get( id );
         return object;
     },
 
